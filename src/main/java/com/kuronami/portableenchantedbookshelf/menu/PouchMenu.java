@@ -141,4 +141,16 @@ public class PouchMenu extends AbstractContainerMenu {
     public void addClientViewportSlot(Slot slot) {
         addSlot(slot);
     }
+
+    /**
+     * server-side: handler が変更された時、 PEB の DataComponent に即時書き戻す。
+     *
+     * <p>PEB は player の hand slot にあるので、 stack の DataComponent を更新すると vanilla の
+     * slot sync で client にも反映される (=client は次 frame で {@code PouchRepo.updateFromStack}
+     * で内容物 refresh できる)。 menu.close 待たずに sync を実現する hook。
+     */
+    public void onHandlerChanged() {
+        if (clientSide || pebStack.isEmpty()) return;
+        PortableEnchantedBookshelfItem.writeBooks(pebStack, snapshotBooks());
+    }
 }

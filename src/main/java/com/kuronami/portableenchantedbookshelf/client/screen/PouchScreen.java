@@ -1,13 +1,19 @@
 package com.kuronami.portableenchantedbookshelf.client.screen;
 
+import com.kuronami.portableenchantedbookshelf.item.PortableEnchantedBookshelfItem;
 import com.kuronami.portableenchantedbookshelf.menu.PouchMenu;
+import com.kuronami.portableenchantedbookshelf.network.ExtractByIdxPayload;
+import com.kuronami.portableenchantedbookshelf.network.InsertCarriedPayload;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * PouchScreen — Phase 2 (AE2 viewport pattern)。
@@ -125,5 +131,82 @@ public class PouchScreen extends AbstractContainerScreen<PouchMenu> {
                 && mouseX <= leftPos + VIEWPORT_X + VIEWPORT_COLS * SLOT_SIZE
                 && mouseY >= topPos + VIEWPORT_Y
                 && mouseY <= topPos + VIEWPORT_Y + VIEWPORT_ROWS * SLOT_SIZE;
+    }
+
+    /**
+     * Viewport slot click → server に packet 送信。
+     *
+     * <p>挙動:
+     * <ul>
+     *   <li>cursor 空 + slot に book あり: {@link ExtractByIdxPayload} で取り出し
+     *       (shift+click で全部、 通常クリックで 1 個)</li>
+     *   <li>cursor が enchanted_book + slot 空 or 何か: {@link InsertCarriedPayload} で投入</li>
+     * </ul>
+     *
+     * <p>RepoSlot は vanilla の slot system を bypass してるので、 vanilla の mouseClicked は
+     * 何もしない。 ここで完全自前 click handling。
+     */
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button == 0 && isMouseInViewportArea(mouseX, mouseY)) {
+            RepoSlot clicked = findClickedRepoSlot(mouseX, mouseY);
+            if (clicked != null) {
+                handleViewportClick(clicked);
+                return true;
+            }
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    private RepoSlot findClickedRepoSlot(double mouseX, double mouseY) {
+        for (var slot : menu.slots) {
+            if (slot instanceof RepoSlot rs) {
+                int sx = rs.x;
+                int sy = rs.y;
+                if (mouseX >= sx && mouseX < sx + 16 && mouseY >= sy && mouseY < sy + 16) {
+                    return rs;
+                }
+            }
+        }
+        return null;
+    }
+
+    private void handleViewportClick(RepoSlot slot) {
+        ItemStack carried = menu.getCarried();
+
+        if (PortableEnchantedBookshelfItem.isAcceptableBook(carried)) {
+            // carried = book → insert
+            PacketDistributor.sendToServer(InsertCarriedPayload.INSTANCE);
+            playInsertSound();
+            return;
+        }
+
+        // carried 空 → click extract
+        ItemStack slotItem = slot.getItem();
+        if (slotItem.isEmpty()) return;
+
+        int handlerIdx = slot.currentRepoIndex();
+        int count = hasShiftDown() ? ExtractByIdxPayload.EXTRACT_ALL : 1;
+        PacketDistributor.sendToServer(new ExtractByIdxPayload(handlerIdx, count));
+        playInsertSound();
+    }
+
+    private void playInsertSound() {
+        if (minecraft != null && minecraft.player != null) {
+            minecraft.player.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 1.0F);
+        }
+    }
+
+    /**
+     * Tick ごと repo を PEB stack から refresh。 server 側 handler の変更は
+     * {@link PouchMenu#onHandlerChanged} 経由で stack の DataComponent に書き込まれ、
+     * vanilla の player slot sync で client にも届く。 ここで repo に反映。
+     */
+    @Override
+    public void containerTick() {
+        super.containerTick();
+        if (repo != null) {
+            repo.updateFromStack(menu.getPebStack());
+        }
     }
 }
