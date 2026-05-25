@@ -50,14 +50,15 @@ public class PouchScreen extends AbstractContainerScreen<PouchMenu> {
     /** vanilla 標準 slot サイズ (18×18)。 */
     private static final int SLOT_SIZE = 18;
 
-    /** viewport slot grid の左上座標 (BG 内相対)。 */
+    /** viewport slot grid の左上座標 (BG 内相対) — vanilla large chest slot grid と一致。 */
     private static final int VIEWPORT_X = 8;
-    private static final int VIEWPORT_Y = 33;
+    private static final int VIEWPORT_Y = 18;
 
-    /** 検索バー位置 (タイトル直下、 slot grid 上)。 */
-    private static final int SEARCH_X = 8;
-    private static final int SEARCH_Y = 15;
-    private static final int SEARCH_W = 160;
+    /** 検索バー位置: タイトル右隣 (インベントリ整理系 MOD 流儀)、 slot grid に被らない。 */
+    private static final int SEARCH_X = 96;
+    private static final int SEARCH_Y = 4;
+    private static final int SEARCH_W = 72;
+    /** EditBox の font 表示に必要な最小高 (font 高 9 + 内側 padding)。 */
     private static final int SEARCH_H = 12;
 
     private PouchRepo repo;
