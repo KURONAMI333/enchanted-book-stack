@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import com.kuronami.portableenchantedbookshelf.menu.PouchMenu;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -22,25 +23,24 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.Level;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.loading.FMLEnvironment;
 
 /**
- * 持ち歩けるエンチャント本箱 — Phase 2 (AE2 viewport pattern)。
+ * 持ち歩けるエンチャント本箱 — v3 (AE2 viewport + Sophisticated patterns 統合)。
  *
  * <p>内容物は vanilla {@code DataComponents.CONTAINER} ({@link ItemContainerContents}) に保持、
  * 最大 256 個の enchanted_book (各 stack=1)。
  *
- * <p>UX:
+ * <p>v3 で変更:
  * <ul>
- *   <li>右クリック (空中) → {@link PouchMenu} 開く → AE2 流儀 viewport scroll GUI</li>
- *   <li>Bundle 流儀 (carry book + 右クリ peb / carry peb + 右クリ book) で 1 冊ずつ insert</li>
- *   <li>carry peb + 空 slot 右クリ → 最後の book extract</li>
+ *   <li>creative menu open 中の Bundle 流儀 stash を抑止 (Sophisticated Backpacks 罠回避)</li>
+ *   <li>helper API を index ベース重視 (list.remove(equals) の Akashic Tome 罠回避)</li>
  * </ul>
- *
- * <p>Stack 不可 ({@code stacksTo(1)})。
  */
 public class PortableEnchantedBookshelfItem extends Item {
 
-    /** vanilla ItemContainerContents の上限と整合させる soft cap。 */
+    /** vanilla {@code ItemContainerContents.MAX_SIZE} = 256 と整合。 */
     public static final int MAX_BOOKS = 256;
 
     public PortableEnchantedBookshelfItem(Properties properties) {
@@ -51,7 +51,7 @@ public class PortableEnchantedBookshelfItem extends Item {
     // Component アクセス
     // ─────────────────────────────────────────────────────────────
 
-    /** PEB の中身を取得 (default = EMPTY)。 */
+    /** PEB の中身 (default = EMPTY)。 */
     public static ItemContainerContents getContents(ItemStack stack) {
         return stack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
     }
@@ -61,14 +61,14 @@ public class PortableEnchantedBookshelfItem extends Item {
         stack.set(DataComponents.CONTAINER, contents);
     }
 
-    /** {@link ItemContainerContents} から書きやすい mutable list を取得。 */
+    /** mutable list として books を取得 (ItemStack は copy 済)。 */
     public static List<ItemStack> getMutableBooks(ItemStack pebStack) {
         return getContents(pebStack).stream()
                 .map(ItemStack::copy)
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    /** mutable list を {@link ItemContainerContents} に焼き直して書き戻す。 */
+    /** mutable list を {@link ItemContainerContents} に焼き直して書き戻し。 */
     public static void writeBooks(ItemStack pebStack, List<ItemStack> books) {
         pebStack.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(books));
     }
@@ -78,7 +78,7 @@ public class PortableEnchantedBookshelfItem extends Item {
         return stack.getItem() instanceof PortableEnchantedBookshelfItem;
     }
 
-    /** ItemStack が vanilla enchanted_book で、 stack=1 取り出せる状態か。 */
+    /** 単一 enchanted_book (stack=1 取り出せる前提) として受け入れ可能か。 */
     public static boolean isAcceptableBook(ItemStack stack) {
         return !stack.isEmpty() && stack.is(Items.ENCHANTED_BOOK);
     }
@@ -90,10 +90,8 @@ public class PortableEnchantedBookshelfItem extends Item {
     /** book 1 冊を PEB に追加。 bookStack は 1 shrink される。 */
     public static boolean tryInsertOne(ItemStack pebStack, ItemStack bookStack) {
         if (!isAcceptableBook(bookStack)) return false;
-
         List<ItemStack> books = getMutableBooks(pebStack);
         if (books.size() >= MAX_BOOKS) return false;
-
         ItemStack one = bookStack.copy();
         one.setCount(1);
         books.add(one);
@@ -102,11 +100,14 @@ public class PortableEnchantedBookshelfItem extends Item {
         return true;
     }
 
-    /** PEB の末尾 (= 最後に入れた) book を 1 冊取り出す。 空なら EMPTY。 */
+    /**
+     * PEB から最後の book を 1 冊取り出す (LIFO)。
+     * Akashic 罠回避: index で削除 (list.remove(int))、 equals ベース remove は使わない。
+     */
     public static ItemStack tryExtractLast(ItemStack pebStack) {
         List<ItemStack> books = getMutableBooks(pebStack);
         if (books.isEmpty()) return ItemStack.EMPTY;
-        ItemStack last = books.remove(books.size() - 1);
+        ItemStack last = books.remove(books.size() - 1); // index ベース、 equals 比較なし
         writeBooks(pebStack, books);
         return last;
     }
@@ -138,8 +139,11 @@ public class PortableEnchantedBookshelfItem extends Item {
     @Override
     public boolean overrideStackedOnOther(ItemStack pebStack, Slot slot, ClickAction action, Player player) {
         if (action != ClickAction.SECONDARY) return false;
+        if (isCreativeMenuOpen()) return false; // Sophisticated Backpacks 罠回避
+
         ItemStack target = slot.getItem();
         if (target.isEmpty()) {
+            // 空 slot 右クリ → 最後の本 extract → そこに置く
             ItemStack extracted = tryExtractLast(pebStack);
             if (extracted.isEmpty()) return false;
             slot.safeInsert(extracted);
@@ -159,12 +163,32 @@ public class PortableEnchantedBookshelfItem extends Item {
             Player player, SlotAccess access
     ) {
         if (action != ClickAction.SECONDARY) return false;
+        if (isCreativeMenuOpen()) return false; // Sophisticated Backpacks 罠回避
         if (other.isEmpty()) return false;
         if (tryInsertOne(pebStack, other)) {
             playInsertSound(player);
             return true;
         }
         return false;
+    }
+
+    /**
+     * Creative menu (CreativeModeInventoryScreen) 開いてる時に Bundle 流儀の stash を抑止。
+     *
+     * <p>Sophisticated Backpacks {@code hasCreativeScreenContainerOpen} 流儀。 creative inventory
+     * は通常の Menu でなく専用 Screen を使うため、 carry 中の操作で意図しない stash が起きる罠を防ぐ。
+     *
+     * <p>{@code FMLEnvironment.dist} で client side 判定して Minecraft.getInstance() 参照。
+     * dedicated server では常に false を返す。
+     */
+    private static boolean isCreativeMenuOpen() {
+        if (FMLEnvironment.dist != Dist.CLIENT) return false;
+        try {
+            var screen = Minecraft.getInstance().screen;
+            return screen instanceof net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
     private static void playInsertSound(Player player) {
