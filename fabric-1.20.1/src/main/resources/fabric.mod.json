@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "portableenchantedbookshelf",
+  "version": "${version}",
+  "name": "Portable Enchanted Bookshelf",
+  "description": "A portable bookshelf that compactly stores hundreds of enchanted books with searchable, hierarchical browsing. Upgradeable tiers, librarian trade integration, all-loader support. (Fabric 1.20.1).",
+  "authors": ["KURONAMI"],
+  "contact": {
+    "homepage": "https://github.com/KURONAMI333/portable-enchanted-bookshelf",
+    "issues":   "https://github.com/KURONAMI333/portable-enchanted-bookshelf/issues",
+    "sources":  "https://github.com/KURONAMI333/portable-enchanted-bookshelf"
+  },
+  "license": "MIT",
+
+  "environment": "*",
+
+  "entrypoints": {
+    "main": ["com.kuronami.portableenchantedbookshelf.PortableenchantedbookshelfFabric"]
+  },
+
+  "depends": {
+    "fabricloader": ">=0.15",
+    "fabric-api":   "*",
+    "minecraft":    "~1.20.1",
+    "java":         ">=17"
+  }
+}
