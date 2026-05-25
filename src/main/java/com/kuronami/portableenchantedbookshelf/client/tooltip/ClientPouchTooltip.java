@@ -40,14 +40,37 @@ public class ClientPouchTooltip implements ClientTooltipComponent {
     private final HolderLookup.Provider registries;
 
     public ClientPouchTooltip(PouchTooltip data) {
-        this.entries = data.contents().view();
         this.totalBooks = data.contents().totalBookCount();
-        // ClientTooltipComponent 生成タイミングでは Minecraft.getInstance().level may not yet be safe;
-        // 後で render 時に level.registryAccess() を引いて使う設計でも良いが、
-        // ここでは描画文字列の事前生成を避け、render 時に解決する。
         this.registries = net.minecraft.client.Minecraft.getInstance().level != null
                 ? net.minecraft.client.Minecraft.getInstance().level.registryAccess()
                 : null;
+        // PouchScreen と同じ sort (Name asc → Level asc) を適用、UX 一貫性確保。
+        this.entries = data.contents().view().stream()
+                .sorted(
+                        java.util.Comparator
+                                .<EnchantEntry, String>comparing(
+                                        e -> resolveEnchantmentNameStatic(e, registries).getString().toLowerCase()
+                                )
+                                .thenComparingInt(EnchantEntry::level)
+                )
+                .toList();
+    }
+
+    /** ctor 内で使うため static 化したヘルパー。後段の resolveEnchantmentName と同実装。 */
+    private static Component resolveEnchantmentNameStatic(EnchantEntry entry, HolderLookup.Provider registries) {
+        if (registries == null) {
+            return Component.literal(entry.enchantId().toString());
+        }
+        var enchantRegistry = registries.lookup(Registries.ENCHANTMENT).orElse(null);
+        if (enchantRegistry == null) {
+            return Component.literal(entry.enchantId().toString());
+        }
+        ResourceKey<Enchantment> key = ResourceKey.create(Registries.ENCHANTMENT, entry.enchantId());
+        Holder<Enchantment> holder = enchantRegistry.get(key).orElse(null);
+        if (holder == null) {
+            return Component.literal(entry.enchantId().toString());
+        }
+        return Component.translatable(holder.value().description().getString());
     }
 
     @Override
