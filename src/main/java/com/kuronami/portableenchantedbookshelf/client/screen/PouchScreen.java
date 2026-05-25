@@ -8,6 +8,7 @@ import com.kuronami.portableenchantedbookshelf.menu.PouchMenu;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -22,10 +23,10 @@ import net.minecraft.world.item.enchantment.Enchantment;
  * PEB の中身を開いた Screen。
  *
  * <p>背景画像は vanilla の {@code shulker_box.png} をそのまま流用 (新規 texture 0 個)。
- * 上に PEB の内容物を tree list で描画。
+ * 上に PEB の内容物を tree list で描画、上部に vanilla {@link EditBox} で検索バー。
  *
- * <p>v0.1.0 は read-only ビュー: 内容物の一覧表示 + ヘッダ。検索バー / sort / 個別取り出しは
- * Phase 1 後半で追加予定。
+ * <p>v0.1.0: read-only ビュー + 検索フィルタ。
+ * Phase 1.5: entry クリックで個別取り出し (network packet)、sort 機能。
  */
 public class PouchScreen extends AbstractContainerScreen<PouchMenu> {
 
@@ -37,13 +38,25 @@ public class PouchScreen extends AbstractContainerScreen<PouchMenu> {
     private static final int BG_WIDTH = 176;
     private static final int BG_HEIGHT = 166;
 
-    /** リスト描画開始 y (背景の slot 領域内)。 */
-    private static final int LIST_X_OFFSET = 8;
-    private static final int LIST_Y_OFFSET = 18;
+    /** 検索バー位置 (タイトル直下、slot 領域上端)。 */
+    private static final int SEARCH_X = 8;
+    private static final int SEARCH_Y = 14;
+    private static final int SEARCH_W = 100;
+    private static final int SEARCH_H = 12;
+
+    /** リスト描画位置 (検索バー直下から)。 */
+    private static final int LIST_X = 8;
+    private static final int LIST_Y = 30;
     private static final int LINE_HEIGHT = 10;
 
-    /** リスト表示行数上限 (shulker box の slot 領域 ~54px に収まる目安)。 */
-    private static final int MAX_VISIBLE_LINES = 5;
+    /** リスト表示行数上限 (検索バー下 ~40px に収まる目安)。 */
+    private static final int MAX_VISIBLE_LINES = 4;
+
+    private EditBox searchBar;
+    /** 現在の検索クエリ (lowercase, 空文字 = フィルタ無し)。 */
+    private String searchQuery = "";
+    /** スクロール位置 (0 = リスト先頭表示)。 */
+    private int scrollOffset = 0;
 
     public PouchScreen(PouchMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -55,66 +68,157 @@ public class PouchScreen extends AbstractContainerScreen<PouchMenu> {
         this.inventoryLabelY = BG_HEIGHT - 96 + 2;
     }
 
-    /** 背景画像 (vanilla shulker box) を描画。 */
+    @Override
+    protected void init() {
+        super.init();
+
+        // 検索バー (vanilla EditBox widget、自前 texture 不要)
+        this.searchBar = new EditBox(
+                this.font,
+                this.leftPos + SEARCH_X,
+                this.topPos + SEARCH_Y,
+                SEARCH_W,
+                SEARCH_H,
+                Component.translatable("item.portableenchantedbookshelf.portable_enchanted_bookshelf.search")
+        );
+        this.searchBar.setMaxLength(50);
+        this.searchBar.setBordered(true);
+        this.searchBar.setResponder(text -> {
+            this.searchQuery = text.toLowerCase();
+            this.scrollOffset = 0; // 検索クエリ変化で先頭にリセット
+        });
+        this.addRenderableWidget(this.searchBar);
+        this.setInitialFocus(this.searchBar);
+    }
+
+    /** マウスホイールでリストをスクロール (背景上のホバー時のみ反応)。 */
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (isMouseInListArea(mouseX, mouseY)) {
+            // 上スクロール (scrollY > 0) で offset 減、下スクロール (scrollY < 0) で offset 増
+            int delta = scrollY > 0 ? -1 : (scrollY < 0 ? 1 : 0);
+            updateScrollOffset(this.scrollOffset + delta);
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    private boolean isMouseInListArea(double mouseX, double mouseY) {
+        return mouseX >= leftPos + LIST_X
+                && mouseX <= leftPos + LIST_X + 160
+                && mouseY >= topPos + LIST_Y
+                && mouseY <= topPos + LIST_Y + MAX_VISIBLE_LINES * LINE_HEIGHT;
+    }
+
+    private void updateScrollOffset(int newOffset) {
+        // total はクエリ変化で変わるので render 時 clamp、ここでは負値だけ止める
+        this.scrollOffset = Math.max(0, newOffset);
+    }
+
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         graphics.blit(BG_TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight);
     }
 
-    /** vanilla labels (タイトル + プレイヤーインベントリ "Inventory") の上に内容物リスト描画。 */
+    /** vanilla labels の上に内容物リスト描画 (検索フィルタ適用)。 */
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         super.renderLabels(graphics, mouseX, mouseY);
 
         PouchContents contents = menu.getContents();
-        List<EnchantEntry> entries = contents.view();
+        var registries = (this.minecraft != null && this.minecraft.level != null)
+                ? this.minecraft.level.registryAccess()
+                : null;
 
-        if (entries.isEmpty()) {
+        List<EnchantEntry> filteredEntries = filterEntries(contents.view(), this.searchQuery, registries);
+
+        if (filteredEntries.isEmpty()) {
+            String label = contents.isEmpty() ? "(empty)" : "(no match)";
             graphics.drawString(
                     font,
-                    Component.literal("(empty)").withStyle(ChatFormatting.GRAY),
-                    LIST_X_OFFSET,
-                    LIST_Y_OFFSET,
+                    Component.literal(label).withStyle(ChatFormatting.GRAY),
+                    LIST_X,
+                    LIST_Y,
                     0xFFFFFF,
                     false
             );
             return;
         }
 
-        // 内容物 line を描画 (上限まで)
-        var registries = (this.minecraft != null && this.minecraft.level != null)
-                ? this.minecraft.level.registryAccess()
-                : null;
+        // スクロール位置の clamp (filtered 件数に応じて)
+        int maxScroll = Math.max(0, filteredEntries.size() - MAX_VISIBLE_LINES);
+        if (this.scrollOffset > maxScroll) this.scrollOffset = maxScroll;
 
-        int shown = Math.min(entries.size(), MAX_VISIBLE_LINES);
+        int shown = Math.min(filteredEntries.size() - this.scrollOffset, MAX_VISIBLE_LINES);
         for (int i = 0; i < shown; i++) {
-            EnchantEntry e = entries.get(i);
+            EnchantEntry e = filteredEntries.get(this.scrollOffset + i);
             Component line = formatEntryLine(e, registries);
             graphics.drawString(
                     font,
                     line,
-                    LIST_X_OFFSET,
-                    LIST_Y_OFFSET + i * LINE_HEIGHT,
+                    LIST_X,
+                    LIST_Y + i * LINE_HEIGHT,
                     0xFFFFFF,
                     false
             );
         }
 
-        if (entries.size() > MAX_VISIBLE_LINES) {
-            Component more = Component.literal("...and " + (entries.size() - MAX_VISIBLE_LINES) + " more")
-                    .withStyle(ChatFormatting.DARK_GRAY);
+        // スクロール indicator (上 / 下にまだあるよ表示)
+        if (this.scrollOffset > 0) {
             graphics.drawString(
                     font,
-                    more,
-                    LIST_X_OFFSET,
-                    LIST_Y_OFFSET + shown * LINE_HEIGHT,
+                    Component.literal("▲").withStyle(ChatFormatting.GRAY),
+                    LIST_X + 145,
+                    LIST_Y,
+                    0xFFFFFF,
+                    false
+            );
+        }
+        if (this.scrollOffset + MAX_VISIBLE_LINES < filteredEntries.size()) {
+            graphics.drawString(
+                    font,
+                    Component.literal("▼").withStyle(ChatFormatting.GRAY),
+                    LIST_X + 145,
+                    LIST_Y + (MAX_VISIBLE_LINES - 1) * LINE_HEIGHT,
                     0xFFFFFF,
                     false
             );
         }
     }
 
-    private Component formatEntryLine(EnchantEntry entry, HolderLookup.Provider registries) {
+    /**
+     * クエリで entries を filter。マッチ条件:
+     * <ul>
+     *   <li>localized name (例: "Fortune", "幸運") を partial match</li>
+     *   <li>enchant ID (例: "minecraft:fortune") を partial match</li>
+     *   <li>ローマ数字レベル (例: "III") を完全一致</li>
+     * </ul>
+     * クエリ空文字なら全件返す。
+     */
+    private static List<EnchantEntry> filterEntries(
+            List<EnchantEntry> all, String lowerQuery, HolderLookup.Provider registries
+    ) {
+        if (lowerQuery == null || lowerQuery.isBlank()) return all;
+        return all.stream()
+                .filter(e -> matchesQuery(e, lowerQuery, registries))
+                .toList();
+    }
+
+    private static boolean matchesQuery(EnchantEntry e, String lowerQuery, HolderLookup.Provider registries) {
+        // localized name
+        String name = resolveEnchantmentName(e, registries).getString().toLowerCase();
+        if (name.contains(lowerQuery)) return true;
+
+        // enchant ID
+        String idStr = e.enchantId().toString().toLowerCase();
+        if (idStr.contains(lowerQuery)) return true;
+
+        // ローマ数字レベル (例: "III") を完全一致
+        String levelRoman = romanOrPlain(e.level()).toLowerCase();
+        return levelRoman.equals(lowerQuery);
+    }
+
+    private static Component formatEntryLine(EnchantEntry entry, HolderLookup.Provider registries) {
         Component name = resolveEnchantmentName(entry, registries);
         ChatFormatting color = entry.isCurse() ? ChatFormatting.RED : ChatFormatting.WHITE;
         return Component.empty()
