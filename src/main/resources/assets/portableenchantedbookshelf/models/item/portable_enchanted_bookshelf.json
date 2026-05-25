@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "portableenchantedbookshelf:item/portable_enchanted_bookshelf"
+  }
+}
