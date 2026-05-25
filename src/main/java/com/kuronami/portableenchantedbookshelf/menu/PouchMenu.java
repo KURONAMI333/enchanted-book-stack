@@ -129,4 +129,16 @@ public class PouchMenu extends AbstractContainerMenu {
             PortableEnchantedBookshelfItem.writeBooks(pebStack, snapshotBooks());
         }
     }
+
+    /**
+     * Client-only viewport slot (AE2 流儀の {@code ClientReadOnlySlot}) を menu に追加する。
+     *
+     * <p>{@link AbstractContainerMenu#addSlot} は protected なので、 PouchScreen 等の
+     * 外部から呼べるよう public wrapper を提供。 server / client で slot 数が異なる
+     * (server = 36 player inv のみ、 client = 36 + 54 viewport) のが正常 — viewport slot は
+     * vanilla の slot sync を bypass し、 client が独自 {@code PouchRepo} から動的取得する。
+     */
+    public void addClientViewportSlot(Slot slot) {
+        addSlot(slot);
+    }
 }
