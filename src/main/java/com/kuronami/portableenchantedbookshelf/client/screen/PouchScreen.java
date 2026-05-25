@@ -5,11 +5,13 @@ import java.util.List;
 import com.kuronami.portableenchantedbookshelf.data.EnchantEntry;
 import com.kuronami.portableenchantedbookshelf.data.PouchContents;
 import com.kuronami.portableenchantedbookshelf.menu.PouchMenu;
+import com.kuronami.portableenchantedbookshelf.network.ExtractBookPayload;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
@@ -113,6 +115,44 @@ public class PouchScreen extends AbstractContainerScreen<PouchMenu> {
     private void updateScrollOffset(int newOffset) {
         // total はクエリ変化で変わるので render 時 clamp、ここでは負値だけ止める
         this.scrollOffset = Math.max(0, newOffset);
+    }
+
+    /**
+     * リスト entry を左クリック → 該当 enchant 本を 1 冊取り出す ({@link ExtractBookPayload})。
+     * vanilla の slot 系には無い独自 click 処理なので {@code mouseClicked} で捕まえる。
+     */
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button == 0 && isMouseInListArea(mouseX, mouseY)) {
+            int lineIdx = (int) ((mouseY - topPos - LIST_Y) / LINE_HEIGHT);
+            if (lineIdx < 0 || lineIdx >= MAX_VISIBLE_LINES) {
+                return super.mouseClicked(mouseX, mouseY, button);
+            }
+            // 現在の filtered list を再構築 (race 安全のため毎回計算)
+            var registries = (this.minecraft != null && this.minecraft.level != null)
+                    ? this.minecraft.level.registryAccess()
+                    : null;
+            List<EnchantEntry> filtered = filterEntries(
+                    menu.getContents().view(), this.searchQuery, registries
+            );
+            int absIdx = this.scrollOffset + lineIdx;
+            if (absIdx < 0 || absIdx >= filtered.size()) {
+                return super.mouseClicked(mouseX, mouseY, button);
+            }
+            EnchantEntry clicked = filtered.get(absIdx);
+            // server 側で extract 実行 (book を player インベントリへ)
+            PacketDistributor.sendToServer(new ExtractBookPayload(
+                    clicked.enchantId(), clicked.level(), clicked.isCurse()
+            ));
+            // 効果音 (vanilla book page turn)
+            if (this.minecraft != null && this.minecraft.player != null) {
+                this.minecraft.player.playSound(
+                        net.minecraft.sounds.SoundEvents.BOOK_PAGE_TURN, 1.0F, 1.0F
+                );
+            }
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
