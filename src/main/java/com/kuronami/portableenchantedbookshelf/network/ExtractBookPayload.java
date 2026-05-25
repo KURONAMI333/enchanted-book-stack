@@ -16,17 +16,24 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
- * Screen から PEB の中身を 1 冊取り出すリクエスト (client → server)。
+ * Screen から PEB の中身を取り出すリクエスト (client → server)。
  *
- * <p>EnchantEntry の kind (enchantId + level + isCurse) で対象を指定する。
+ * <p>EnchantEntry の kind (enchantId + level + isCurse) で対象を指定 + 取り出し冊数指定。
  * index ベースでないのは、filtered list でクリックされた時の filtered→original 変換が
  * 不要になる + 並行更新で entries の順序が変わってもズレない。
+ *
+ * <p>count = 1 で通常クリック、count = {@link Integer#MAX_VALUE} で shift-click「全部取り出し」。
+ * server 側で entry の実在 count に clamp する。
  */
 public record ExtractBookPayload(
         ResourceLocation enchantId,
         int level,
-        boolean isCurse
+        boolean isCurse,
+        int count
 ) implements CustomPacketPayload {
+
+    /** 「全部取り出し」フラグ用 sentinel (server で actual count に clamp)。 */
+    public static final int EXTRACT_ALL = Integer.MAX_VALUE;
 
     public static final Type<ExtractBookPayload> TYPE = new Type<>(
             ResourceLocation.fromNamespaceAndPath(PortableEnchantedBookshelf.MODID, "extract_book")
@@ -37,6 +44,7 @@ public record ExtractBookPayload(
                     ResourceLocation.STREAM_CODEC, ExtractBookPayload::enchantId,
                     ByteBufCodecs.VAR_INT,         ExtractBookPayload::level,
                     ByteBufCodecs.BOOL,            ExtractBookPayload::isCurse,
+                    ByteBufCodecs.VAR_INT,         ExtractBookPayload::count,
                     ExtractBookPayload::new
             );
 
@@ -45,14 +53,13 @@ public record ExtractBookPayload(
         return TYPE;
     }
 
-    /** Server 側 handler。プレイヤー手持ちの PEB から該当 kind を 1 冊取り出してインベントリへ。 */
+    /** Server 側 handler。手持ち PEB から該当 kind を count 冊 (上限あり) 取り出してインベントリへ。 */
     public static void handle(ExtractBookPayload payload, IPayloadContext context) {
         Player player = context.player();
         ItemStack pebStack = findPouchInHand(player);
         if (pebStack.isEmpty()) return;
 
         PouchContents contents = PortableEnchantedBookshelfItem.getContents(pebStack);
-        // 指定 kind を探す
         EnchantEntry target = null;
         for (EnchantEntry e : contents.entries()) {
             if (e.enchantId().equals(payload.enchantId())
@@ -62,18 +69,22 @@ public record ExtractBookPayload(
                 break;
             }
         }
-        if (target == null) return; // race condition (Screen 表示と現状が乖離)、無視
+        if (target == null) return;
 
-        // book 生成
-        ItemStack book = EnchantedBookHelper.createBook(player.level().registryAccess(), target);
-        if (book.isEmpty()) return; // enchant が registry から消えた等
+        // 取り出し数を clamp: payload.count を 1..target.count() に
+        int requested = Math.max(1, payload.count());
+        int actual = Math.min(requested, target.count());
 
-        // PouchContents 更新 + book を player インベントリへ
-        PouchContents updated = contents.extract(target.withCount(1), 1);
-        PortableEnchantedBookshelfItem.setContents(pebStack, updated);
-        if (!player.getInventory().add(book)) {
-            player.drop(book, false);
+        // book を actual 冊生成、player インベントリへ (満杯なら drop)
+        for (int i = 0; i < actual; i++) {
+            ItemStack book = EnchantedBookHelper.createBook(player.level().registryAccess(), target);
+            if (book.isEmpty()) return; // enchant 解決失敗、以後の生成も無理
+            if (!player.getInventory().add(book)) {
+                player.drop(book, false);
+            }
         }
+        PouchContents updated = contents.extract(target.withCount(1), actual);
+        PortableEnchantedBookshelfItem.setContents(pebStack, updated);
     }
 
     private static ItemStack findPouchInHand(Player player) {

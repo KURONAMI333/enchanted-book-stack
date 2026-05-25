@@ -140,9 +140,10 @@ public class PouchScreen extends AbstractContainerScreen<PouchMenu> {
                 return super.mouseClicked(mouseX, mouseY, button);
             }
             EnchantEntry clicked = filtered.get(absIdx);
-            // server 側で extract 実行 (book を player インベントリへ)
+            // shift 押下で「全部取り出し」(EXTRACT_ALL sentinel)、通常は 1 冊
+            int extractCount = hasShiftDown() ? ExtractBookPayload.EXTRACT_ALL : 1;
             PacketDistributor.sendToServer(new ExtractBookPayload(
-                    clicked.enchantId(), clicked.level(), clicked.isCurse()
+                    clicked.enchantId(), clicked.level(), clicked.isCurse(), extractCount
             ));
             // 効果音 (vanilla book page turn)
             if (this.minecraft != null && this.minecraft.player != null) {
@@ -160,7 +161,7 @@ public class PouchScreen extends AbstractContainerScreen<PouchMenu> {
         graphics.blit(BG_TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight);
     }
 
-    /** vanilla labels の上に内容物リスト描画 (検索フィルタ適用)。 */
+    /** vanilla labels の上に内容物リスト描画 (検索フィルタ適用 + hover highlight)。 */
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         super.renderLabels(graphics, mouseX, mouseY);
@@ -189,15 +190,25 @@ public class PouchScreen extends AbstractContainerScreen<PouchMenu> {
         int maxScroll = Math.max(0, filteredEntries.size() - MAX_VISIBLE_LINES);
         if (this.scrollOffset > maxScroll) this.scrollOffset = maxScroll;
 
+        // hover line idx (-1 = リストエリア外)
+        int hoverIdx = computeHoveredLineIdx(mouseX, mouseY);
+
         int shown = Math.min(filteredEntries.size() - this.scrollOffset, MAX_VISIBLE_LINES);
         for (int i = 0; i < shown; i++) {
+            int yPos = LIST_Y + i * LINE_HEIGHT;
             EnchantEntry e = filteredEntries.get(this.scrollOffset + i);
+
+            // hover highlight (半透明白の rectangle)
+            if (i == hoverIdx) {
+                graphics.fill(LIST_X - 1, yPos - 1, LIST_X + 160, yPos + LINE_HEIGHT - 1, 0x40FFFFFF);
+            }
+
             Component line = formatEntryLine(e, registries);
             graphics.drawString(
                     font,
                     line,
                     LIST_X,
-                    LIST_Y + i * LINE_HEIGHT,
+                    yPos,
                     0xFFFFFF,
                     false
             );
@@ -224,6 +235,51 @@ public class PouchScreen extends AbstractContainerScreen<PouchMenu> {
                     false
             );
         }
+    }
+
+    /** リストエリアでホバー中の行 index (0..MAX_VISIBLE_LINES-1) を返す。範囲外なら -1。 */
+    private int computeHoveredLineIdx(int mouseX, int mouseY) {
+        // renderLabels の座標は leftPos/topPos からの相対なので、mouseX/Y も補正済が来る
+        if (mouseX < LIST_X || mouseX > LIST_X + 160) return -1;
+        int relY = mouseY - LIST_Y;
+        if (relY < 0) return -1;
+        int idx = relY / LINE_HEIGHT;
+        if (idx >= MAX_VISIBLE_LINES) return -1;
+        return idx;
+    }
+
+    /** Screen-level の render 後に、hover 中 entry の enchant 詳細 tooltip を描画。 */
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        super.render(graphics, mouseX, mouseY, partialTick);
+
+        // hover 詳細 tooltip (vanilla enchant description)
+        renderHoverEntryTooltip(graphics, mouseX, mouseY);
+    }
+
+    private void renderHoverEntryTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+        // mouseX/Y は screen 座標、computeHoveredLineIdx は label 座標 (leftPos/topPos 補正済) で計算
+        int relX = mouseX - leftPos;
+        int relY = mouseY - topPos;
+        int hoverIdx = computeHoveredLineIdx(relX, relY);
+        if (hoverIdx < 0) return;
+
+        var registries = (this.minecraft != null && this.minecraft.level != null)
+                ? this.minecraft.level.registryAccess()
+                : null;
+        List<EnchantEntry> filtered = filterEntries(menu.getContents().view(), this.searchQuery, registries);
+        int absIdx = this.scrollOffset + hoverIdx;
+        if (absIdx < 0 || absIdx >= filtered.size()) return;
+
+        EnchantEntry hovered = filtered.get(absIdx);
+        // 詳細 tooltip: enchant name + count + 「Click to extract one」「Shift+Click for all」hint
+        java.util.List<Component> lines = new java.util.ArrayList<>();
+        lines.add(formatEntryLine(hovered, registries));
+        lines.add(Component.literal("Click to extract 1").withStyle(ChatFormatting.GRAY));
+        if (hovered.count() > 1) {
+            lines.add(Component.literal("Shift+Click for all (" + hovered.count() + ")").withStyle(ChatFormatting.GRAY));
+        }
+        graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
     }
 
     /**
