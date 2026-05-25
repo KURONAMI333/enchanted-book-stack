@@ -1,0 +1,15 @@
+# Portable Enchanted Bookshelf - Forge mods.toml (1.21.1)
+modLoader="javafml"
+loaderVersion="[52,)"
+license="MIT"
+
+[[mods]]
+modId="portableenchantedbookshelf"
+version="${file.jarVersion}"
+displayName="Portable Enchanted Bookshelf"
+authors="KURONAMI"
+displayURL="https://github.com/KURONAMI333/portable-enchanted-bookshelf"
+issueTrackerURL="https://github.com/KURONAMI333/portable-enchanted-bookshelf/issues"
+description='''
+A portable bookshelf that compactly stores hundreds of enchanted books with searchable, hierarchical browsing. Upgradeable tiers, librarian trade integration, all-loader support.
+'''
