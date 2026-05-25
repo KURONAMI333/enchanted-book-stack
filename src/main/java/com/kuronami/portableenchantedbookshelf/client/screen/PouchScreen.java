@@ -283,20 +283,30 @@ public class PouchScreen extends AbstractContainerScreen<PouchMenu> {
     }
 
     /**
-     * クエリで entries を filter。マッチ条件:
+     * クエリで entries を filter + Name asc → Level asc で sort。マッチ条件:
      * <ul>
      *   <li>localized name (例: "Fortune", "幸運") を partial match</li>
      *   <li>enchant ID (例: "minecraft:fortune") を partial match</li>
      *   <li>ローマ数字レベル (例: "III") を完全一致</li>
      * </ul>
-     * クエリ空文字なら全件返す。
+     * クエリ空文字なら filter 無し (sort のみ)。
+     *
+     * <p>Sort 順: localized name asc (case-insensitive) → level asc。
+     * 同じ enchant (例: Fortune) の中で I → II → III の順。
      */
     private static List<EnchantEntry> filterEntries(
             List<EnchantEntry> all, String lowerQuery, HolderLookup.Provider registries
     ) {
-        if (lowerQuery == null || lowerQuery.isBlank()) return all;
+        boolean noFilter = (lowerQuery == null || lowerQuery.isBlank());
         return all.stream()
-                .filter(e -> matchesQuery(e, lowerQuery, registries))
+                .filter(e -> noFilter || matchesQuery(e, lowerQuery, registries))
+                .sorted(
+                        java.util.Comparator
+                                .<EnchantEntry, String>comparing(
+                                        e -> resolveEnchantmentName(e, registries).getString().toLowerCase()
+                                )
+                                .thenComparingInt(EnchantEntry::level)
+                )
                 .toList();
     }
 
