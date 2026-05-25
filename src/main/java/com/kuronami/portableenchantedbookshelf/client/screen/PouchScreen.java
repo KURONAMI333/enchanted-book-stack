@@ -19,6 +19,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 
 /**
@@ -43,16 +45,20 @@ public class PouchScreen extends AbstractContainerScreen<PouchMenu> {
     /** 検索バー位置 (タイトル直下、slot 領域上端)。 */
     private static final int SEARCH_X = 8;
     private static final int SEARCH_Y = 14;
-    private static final int SEARCH_W = 100;
+    private static final int SEARCH_W = 160;
     private static final int SEARCH_H = 12;
 
-    /** リスト描画位置 (検索バー直下から)。 */
+    /** リスト描画位置 (検索バーとの gap 確保)。 */
     private static final int LIST_X = 8;
-    private static final int LIST_Y = 30;
-    private static final int LINE_HEIGHT = 10;
+    private static final int LIST_Y = 32;
+    /** icon 16 + 余白 = 1 行 18px。 */
+    private static final int LINE_HEIGHT = 18;
+    private static final int ICON_SIZE = 16;
+    /** icon の右 (text 開始位置 offset)。 */
+    private static final int TEXT_X_OFFSET = 20;
 
-    /** リスト表示行数上限 (検索バー下 ~40px に収まる目安)。 */
-    private static final int MAX_VISIBLE_LINES = 4;
+    /** リスト表示行数上限 (検索バー下〜player インベントリ上の slot 領域に収まる)。 */
+    private static final int MAX_VISIBLE_LINES = 3;
 
     private EditBox searchBar;
     /** 現在の検索クエリ (lowercase, 空文字 = フィルタ無し)。 */
@@ -107,7 +113,7 @@ public class PouchScreen extends AbstractContainerScreen<PouchMenu> {
 
     private boolean isMouseInListArea(double mouseX, double mouseY) {
         return mouseX >= leftPos + LIST_X
-                && mouseX <= leftPos + LIST_X + 160
+                && mouseX <= leftPos + LIST_X + 162
                 && mouseY >= topPos + LIST_Y
                 && mouseY <= topPos + LIST_Y + MAX_VISIBLE_LINES * LINE_HEIGHT;
     }
@@ -174,10 +180,12 @@ public class PouchScreen extends AbstractContainerScreen<PouchMenu> {
         List<EnchantEntry> filteredEntries = filterEntries(contents.view(), this.searchQuery, registries);
 
         if (filteredEntries.isEmpty()) {
-            String label = contents.isEmpty() ? "(empty)" : "(no match)";
+            String key = contents.isEmpty()
+                    ? "item.portableenchantedbookshelf.portable_enchanted_bookshelf.empty"
+                    : "item.portableenchantedbookshelf.portable_enchanted_bookshelf.no_match";
             graphics.drawString(
                     font,
-                    Component.literal(label).withStyle(ChatFormatting.GRAY),
+                    Component.translatable(key).withStyle(ChatFormatting.GRAY),
                     LIST_X,
                     LIST_Y,
                     0xFFFFFF,
@@ -194,21 +202,28 @@ public class PouchScreen extends AbstractContainerScreen<PouchMenu> {
         int hoverIdx = computeHoveredLineIdx(mouseX, mouseY);
 
         int shown = Math.min(filteredEntries.size() - this.scrollOffset, MAX_VISIBLE_LINES);
+        // 描画用の vanilla enchanted book ItemStack (glint 付き、各 line で使い回し)
+        ItemStack iconStack = new ItemStack(Items.ENCHANTED_BOOK);
+
         for (int i = 0; i < shown; i++) {
             int yPos = LIST_Y + i * LINE_HEIGHT;
             EnchantEntry e = filteredEntries.get(this.scrollOffset + i);
 
-            // hover highlight (半透明白の rectangle)
+            // hover highlight (半透明白の rectangle、line 全幅)
             if (i == hoverIdx) {
-                graphics.fill(LIST_X - 1, yPos - 1, LIST_X + 160, yPos + LINE_HEIGHT - 1, 0x40FFFFFF);
+                graphics.fill(LIST_X - 1, yPos - 1, LIST_X + 162, yPos + LINE_HEIGHT - 2, 0x40FFFFFF);
             }
 
+            // icon (vanilla enchanted_book、glint 自動)
+            graphics.renderItem(iconStack, LIST_X, yPos);
+
+            // text (icon の右、text vertical center ≒ yPos + (LINE_HEIGHT - 8) / 2)
             Component line = formatEntryLine(e, registries);
             graphics.drawString(
                     font,
                     line,
-                    LIST_X,
-                    yPos,
+                    LIST_X + TEXT_X_OFFSET,
+                    yPos + (LINE_HEIGHT - 8) / 2,
                     0xFFFFFF,
                     false
             );
@@ -219,8 +234,8 @@ public class PouchScreen extends AbstractContainerScreen<PouchMenu> {
             graphics.drawString(
                     font,
                     Component.literal("▲").withStyle(ChatFormatting.GRAY),
-                    LIST_X + 145,
-                    LIST_Y,
+                    LIST_X + 155,
+                    LIST_Y + 4,
                     0xFFFFFF,
                     false
             );
@@ -229,8 +244,8 @@ public class PouchScreen extends AbstractContainerScreen<PouchMenu> {
             graphics.drawString(
                     font,
                     Component.literal("▼").withStyle(ChatFormatting.GRAY),
-                    LIST_X + 145,
-                    LIST_Y + (MAX_VISIBLE_LINES - 1) * LINE_HEIGHT,
+                    LIST_X + 155,
+                    LIST_Y + (MAX_VISIBLE_LINES - 1) * LINE_HEIGHT + 4,
                     0xFFFFFF,
                     false
             );
@@ -240,7 +255,7 @@ public class PouchScreen extends AbstractContainerScreen<PouchMenu> {
     /** リストエリアでホバー中の行 index (0..MAX_VISIBLE_LINES-1) を返す。範囲外なら -1。 */
     private int computeHoveredLineIdx(int mouseX, int mouseY) {
         // renderLabels の座標は leftPos/topPos からの相対なので、mouseX/Y も補正済が来る
-        if (mouseX < LIST_X || mouseX > LIST_X + 160) return -1;
+        if (mouseX < LIST_X || mouseX > LIST_X + 162) return -1;
         int relY = mouseY - LIST_Y;
         if (relY < 0) return -1;
         int idx = relY / LINE_HEIGHT;
@@ -272,12 +287,17 @@ public class PouchScreen extends AbstractContainerScreen<PouchMenu> {
         if (absIdx < 0 || absIdx >= filtered.size()) return;
 
         EnchantEntry hovered = filtered.get(absIdx);
-        // 詳細 tooltip: enchant name + count + 「Click to extract one」「Shift+Click for all」hint
+        // 詳細 tooltip: enchant name + count + click hint (translated)
         java.util.List<Component> lines = new java.util.ArrayList<>();
         lines.add(formatEntryLine(hovered, registries));
-        lines.add(Component.literal("Click to extract 1").withStyle(ChatFormatting.GRAY));
+        lines.add(Component.translatable(
+                "item.portableenchantedbookshelf.portable_enchanted_bookshelf.click_extract"
+        ).withStyle(ChatFormatting.GRAY));
         if (hovered.count() > 1) {
-            lines.add(Component.literal("Shift+Click for all (" + hovered.count() + ")").withStyle(ChatFormatting.GRAY));
+            lines.add(Component.translatable(
+                    "item.portableenchantedbookshelf.portable_enchanted_bookshelf.shift_extract",
+                    hovered.count()
+            ).withStyle(ChatFormatting.GRAY));
         }
         graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
     }

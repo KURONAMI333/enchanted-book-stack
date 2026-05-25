@@ -7,14 +7,10 @@ import com.kuronami.portableenchantedbookshelf.client.tooltip.PouchTooltip;
 import com.kuronami.portableenchantedbookshelf.data.EnchantEntry;
 import com.kuronami.portableenchantedbookshelf.data.EnchantedBookHelper;
 import com.kuronami.portableenchantedbookshelf.data.PouchContents;
+import com.kuronami.portableenchantedbookshelf.menu.PouchMenu;
 import com.kuronami.portableenchantedbookshelf.registry.PEBDataComponents;
 
-import net.minecraft.ChatFormatting;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
@@ -28,10 +24,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
-import com.kuronami.portableenchantedbookshelf.menu.PouchMenu;
 
 /**
  * 持ち歩けるエンチャント本棚。
@@ -169,92 +162,8 @@ public class PortableEnchantedBookshelfItem extends Item {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // Tooltip — 内容物プレビュー (容量数字なし、kura 仕様)
-    // ─────────────────────────────────────────────────────────────
-
-    @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-        PouchContents contents = getContents(stack);
-
-        if (contents.isEmpty()) {
-            tooltip.add(Component.translatable(
-                    "item.portableenchantedbookshelf.portable_enchanted_bookshelf.tooltip.empty"
-            ).withStyle(ChatFormatting.GRAY));
-            return;
-        }
-
-        int total = contents.totalBookCount();
-        tooltip.add(Component.translatable(
-                "item.portableenchantedbookshelf.portable_enchanted_bookshelf.tooltip.count",
-                total
-        ).withStyle(ChatFormatting.AQUA));
-
-        // 内容物プレビュー (上位 3 種類まで、残りは "...他 N 種")
-        List<EnchantEntry> entries = contents.view();
-        int previewLimit = 3;
-        int shown = Math.min(previewLimit, entries.size());
-        var registries = context.registries();
-
-        for (int i = 0; i < shown; i++) {
-            EnchantEntry e = entries.get(i);
-            Component line = formatEntryLine(e, registries);
-            tooltip.add(Component.literal("  ").append(line).withStyle(ChatFormatting.GRAY));
-        }
-
-        if (entries.size() > previewLimit) {
-            tooltip.add(Component.translatable(
-                    "item.portableenchantedbookshelf.portable_enchanted_bookshelf.tooltip.preview_more",
-                    entries.size() - previewLimit
-            ).withStyle(ChatFormatting.DARK_GRAY));
-        }
-    }
-
-    /** "Fortune III × 3" 形式の表示行を組み立て。enchant 名は localized。 */
-    private static Component formatEntryLine(EnchantEntry entry, HolderLookup.Provider registries) {
-        Component enchantName = resolveEnchantmentName(entry, registries);
-        String levelStr = romanOrPlain(entry.level());
-        ChatFormatting color = entry.isCurse() ? ChatFormatting.RED : ChatFormatting.WHITE;
-
-        return Component.empty()
-                .append(enchantName.copy().withStyle(color))
-                .append(Component.literal(" " + levelStr).withStyle(color))
-                .append(Component.literal(" × " + entry.count()).withStyle(ChatFormatting.GRAY));
-    }
-
-    /** enchant ID から localized name を解決 (modded enchant にも対応)。 */
-    private static Component resolveEnchantmentName(EnchantEntry entry, HolderLookup.Provider registries) {
-        if (registries == null) {
-            return Component.literal(entry.enchantId().toString());
-        }
-        var enchantRegistry = registries.lookup(Registries.ENCHANTMENT).orElse(null);
-        if (enchantRegistry == null) {
-            return Component.literal(entry.enchantId().toString());
-        }
-        ResourceKey<Enchantment> key = ResourceKey.create(Registries.ENCHANTMENT, entry.enchantId());
-        Holder<Enchantment> holder = enchantRegistry.get(key).orElse(null);
-        if (holder == null) {
-            return Component.literal(entry.enchantId().toString());
-        }
-        return Component.translatable(holder.value().description().getString());
-    }
-
-    /** I-X はローマ数字、11+ は "Lvl N"。 */
-    private static String romanOrPlain(int level) {
-        return switch (level) {
-            case 1 -> "I";
-            case 2 -> "II";
-            case 3 -> "III";
-            case 4 -> "IV";
-            case 5 -> "V";
-            case 6 -> "VI";
-            case 7 -> "VII";
-            case 8 -> "VIII";
-            case 9 -> "IX";
-            case 10 -> "X";
-            default -> level <= 0 ? Integer.toString(level) : "Lvl " + level;
-        };
-    }
-
+    // Tooltip — getTooltipImage (Bundle 流儀 popup) で完結。
+    // appendHoverText は削除済 (二重表示防止)。
     // ─────────────────────────────────────────────────────────────
     // 効果音 (UX feedback)
     // ─────────────────────────────────────────────────────────────
