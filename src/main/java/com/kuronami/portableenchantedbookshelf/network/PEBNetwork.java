@@ -10,8 +10,14 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 /**
  * PEB の network payload 登録ハブ。
  *
- * <p>Phase 2 (AE2 viewport): client/server 内容物 sync + insert / extract packet を登録予定。
- * 現在は skeleton (payload 未追加)。
+ * <p>Phase 2 (AE2 viewport pattern) で使う client → server packet を登録:
+ * <ul>
+ *   <li>{@link ExtractByIdxPayload}: viewport slot click → handler slot から N 個取り出し</li>
+ *   <li>{@link InsertCarriedPayload}: 空 viewport slot click → carried book を最初の空 slot へ</li>
+ * </ul>
+ *
+ * <p>内容物 sync は別経路 — PEB stack の {@code DataComponents.CONTAINER} は
+ * vanilla の slot sync で client にも自動届く ({@code PouchMenu.onHandlerChanged} 経由)。
  */
 @EventBusSubscriber(modid = PortableEnchantedBookshelf.MODID)
 public final class PEBNetwork {
@@ -21,10 +27,16 @@ public final class PEBNetwork {
     @SubscribeEvent
     public static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar("1");
-        // TODO Phase 2: SyncContentsPayload (S→C), InsertCarriedPayload (C→S),
-        //               ExtractByIdxPayload (C→S), TakeAllByKindPayload (C→S)
-        // 現在は payload 無し
-        // registrar 未使用警告抑制
-        if (registrar == null) throw new IllegalStateException("registrar must not be null");
+
+        registrar.playToServer(
+                ExtractByIdxPayload.TYPE,
+                ExtractByIdxPayload.STREAM_CODEC,
+                ExtractByIdxPayload::handle
+        );
+        registrar.playToServer(
+                InsertCarriedPayload.TYPE,
+                InsertCarriedPayload.STREAM_CODEC,
+                InsertCarriedPayload::handle
+        );
     }
 }
