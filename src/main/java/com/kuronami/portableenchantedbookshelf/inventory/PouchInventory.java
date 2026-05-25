@@ -8,22 +8,25 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 /**
- * PEB の内容物保持 server-side handler (256 slot 固定)。
+ * PEB の内容物保持 server-side handler (vanilla shulker box と同じ 27 slot 固定)。
  *
- * <p>vanilla {@code ItemContainerContents} (256 hard cap) と容量を合わせる。 各 slot は
- * vanilla enchanted_book ({@code max_stack=1}) のみ受け入れ、 bag-in-bag 禁止 + PEB 内 PEB 禁止。
+ * <p>v4 設計: 「shulker box like + enchanted_book only + nest 可能」シンプル仕様。
+ * 256 slot + 検索 + scroll の AE2 viewport 流儀は捨て、 vanilla shulker と完全同等の
+ * 9×3=27 slot UI で扱う。
+ *
+ * <p>各 slot は vanilla enchanted_book ({@code max_stack=1}) のみ受け入れ、 bag-in-bag 禁止 +
+ * PEB 内 PEB 禁止 (ただし PEB を shulker/backpack に入れることは可能 = nest 可能の核)。
  *
  * <p>出典 pattern:
  * <ul>
- *   <li>Sophisticated Core {@code StatefulComponentItemHandler} (canonical pattern, 256 slot 上限)</li>
  *   <li>Functional Storage {@code ArmoryCabinetInventoryHandler} (isItemValid で item type 制限)</li>
  *   <li>Functional Storage {@code Capabilities.ItemHandler.ITEM != null} check で bag-in-bag 防止</li>
  * </ul>
  */
 public class PouchInventory extends ItemStackHandler {
 
-    /** 上限 = vanilla {@code ItemContainerContents.MAX_SIZE} (256) と一致。 */
-    public static final int SIZE = 256;
+    /** vanilla shulker box と同じ 27 slot (9×3 grid)。 */
+    public static final int SIZE = 27;
 
     public PouchInventory() {
         super(SIZE);
