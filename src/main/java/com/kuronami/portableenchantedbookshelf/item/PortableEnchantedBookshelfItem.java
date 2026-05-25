@@ -40,8 +40,8 @@ import net.neoforged.fml.loading.FMLEnvironment;
  */
 public class PortableEnchantedBookshelfItem extends Item {
 
-    /** vanilla {@code ItemContainerContents.MAX_SIZE} = 256 と整合。 */
-    public static final int MAX_BOOKS = 256;
+    /** vanilla shulker box 同等の 27 slot (v4 = shulker like simplification)。 */
+    public static final int MAX_BOOKS = 27;
 
     public PortableEnchantedBookshelfItem(Properties properties) {
         super(properties);
