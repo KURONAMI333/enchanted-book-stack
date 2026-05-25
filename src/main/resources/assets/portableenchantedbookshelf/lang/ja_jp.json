@@ -1,5 +1,5 @@
 {
-  "item.portableenchantedbookshelf.portable_enchanted_bookshelf": "持ち歩けるエンチャント本棚",
+  "item.portableenchantedbookshelf.portable_enchanted_bookshelf": "エンチャント本箱",
   "item.portableenchantedbookshelf.portable_enchanted_bookshelf.tooltip.empty": "空",
   "item.portableenchantedbookshelf.portable_enchanted_bookshelf.tooltip.count": "%d 冊のエンチャント本を保管中",
   "item.portableenchantedbookshelf.portable_enchanted_bookshelf.tooltip.preview_more": "...他 %d 種",
