@@ -1,7 +1,11 @@
 {
   "item.portableenchantedbookshelf.portable_enchanted_bookshelf": "Portable Enchanted Bookshelf",
-  "item.portableenchantedbookshelf.portable_enchanted_bookshelf.tooltip.empty": "Empty",
-  "item.portableenchantedbookshelf.portable_enchanted_bookshelf.tooltip.count": "%d enchanted books inside",
-  "item.portableenchantedbookshelf.portable_enchanted_bookshelf.tooltip.preview_more": "...and %d more",
-  "item.portableenchantedbookshelf.portable_enchanted_bookshelf.search": "Search enchantments..."
+  "item.portableenchantedbookshelf.portable_enchanted_bookshelf.search": "Search enchantments...",
+
+  "item.portableenchantedbookshelf.portable_enchanted_bookshelf.empty": "(empty)",
+  "item.portableenchantedbookshelf.portable_enchanted_bookshelf.no_match": "(no match)",
+  "item.portableenchantedbookshelf.portable_enchanted_bookshelf.books_count": "%d enchanted books",
+  "item.portableenchantedbookshelf.portable_enchanted_bookshelf.more": "...and %d more",
+  "item.portableenchantedbookshelf.portable_enchanted_bookshelf.click_extract": "Click to extract 1",
+  "item.portableenchantedbookshelf.portable_enchanted_bookshelf.shift_extract": "Shift+Click for all (%d)"
 }

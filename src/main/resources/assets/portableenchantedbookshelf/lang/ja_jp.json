@@ -1,7 +1,11 @@
 {
   "item.portableenchantedbookshelf.portable_enchanted_bookshelf": "エンチャント本箱",
-  "item.portableenchantedbookshelf.portable_enchanted_bookshelf.tooltip.empty": "空",
-  "item.portableenchantedbookshelf.portable_enchanted_bookshelf.tooltip.count": "%d 冊のエンチャント本を保管中",
-  "item.portableenchantedbookshelf.portable_enchanted_bookshelf.tooltip.preview_more": "...他 %d 種",
-  "item.portableenchantedbookshelf.portable_enchanted_bookshelf.search": "エンチャント検索..."
+  "item.portableenchantedbookshelf.portable_enchanted_bookshelf.search": "エンチャント検索...",
+
+  "item.portableenchantedbookshelf.portable_enchanted_bookshelf.empty": "(空)",
+  "item.portableenchantedbookshelf.portable_enchanted_bookshelf.no_match": "(該当なし)",
+  "item.portableenchantedbookshelf.portable_enchanted_bookshelf.books_count": "エンチャント本 %d 冊",
+  "item.portableenchantedbookshelf.portable_enchanted_bookshelf.more": "...他 %d 種",
+  "item.portableenchantedbookshelf.portable_enchanted_bookshelf.click_extract": "クリックで 1 冊取り出し",
+  "item.portableenchantedbookshelf.portable_enchanted_bookshelf.shift_extract": "Shift+クリックで全部 (%d)"
 }
