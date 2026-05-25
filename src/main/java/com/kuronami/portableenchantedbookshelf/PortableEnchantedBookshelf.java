@@ -1,6 +1,5 @@
 package com.kuronami.portableenchantedbookshelf;
 
-import com.kuronami.portableenchantedbookshelf.registry.PEBDataComponents;
 import com.kuronami.portableenchantedbookshelf.registry.PEBItems;
 import com.kuronami.portableenchantedbookshelf.registry.PEBMenuTypes;
 import com.kuronami.portableenchantedbookshelf.registry.PEBTabs;
@@ -17,14 +16,14 @@ import org.slf4j.Logger;
 /**
  * Portable Enchanted Bookshelf — entry point.
  *
- * <p>持ち歩ける本棚アイテム。エンチャント本だけを 1 スロットに無制限保管。
- * tree 展開 GUI で「エンチャント種類 → level 別 breakdown」検索、modded enchantment
- * / level 上限拡張 mod にも動的対応 (ハードコード一切無し)。
+ * <p>持ち歩けるエンチャント本箱。 vanilla shulker box / chest を超える「**無限容量 + 検索 + scroll**」
+ * 体験を AE2 ME terminal の viewport pattern で実装。
  *
- * <p>司書交易 (Level 4 Expert) で入手可能、craft も可能。NeoForge 1.21.1 first release、
- * 後で Forge/Fabric × 1.21.1/1.20.1 へ水平展開。
+ * <p>内容物は vanilla {@code DataComponents.CONTAINER} ({@code ItemContainerContents}) に保持、
+ * server は最大 256 slot の ItemStackHandler、 client は AE2 流儀の virtual slot viewport
+ * (9×6=54 visible slots + scroll) で全 entry を navigate。
  *
- * <p>詳細仕様: {@code _docs/SPEC.md}
+ * <p>詳細仕様: {@code _docs/SPEC.md} (Phase 2 = B 案 AE2 viewport pattern)
  */
 @Mod(PortableEnchantedBookshelf.MODID)
 public class PortableEnchantedBookshelf {
@@ -32,9 +31,6 @@ public class PortableEnchantedBookshelf {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public PortableEnchantedBookshelf(IEventBus modBus, ModContainer container) {
-        // DataComponent 登録 (NBT 設計)
-        PEBDataComponents.COMPONENTS.register(modBus);
-
         // Item 登録
         PEBItems.ITEMS.register(modBus);
 
@@ -47,6 +43,6 @@ public class PortableEnchantedBookshelf {
         // 司書 (Librarian) Level 4 trade に PEB 追加 (game bus イベント)
         NeoForge.EVENT_BUS.addListener(PEBTrades::onRegisterTrades);
 
-        LOGGER.info("Portable Enchanted Bookshelf — ready to swallow your librarian farm output.");
+        LOGGER.info("Portable Enchanted Bookshelf — viewport pattern (AE2-style) loaded.");
     }
 }
