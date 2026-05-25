@@ -84,14 +84,14 @@ public class ClientPouchTooltip implements ClientTooltipComponent {
 
     @Override
     public int getWidth(Font font) {
-        int max = font.width(headerLine());
+        int max = font.width(headerComponent());
         int shown = Math.min(entries.size(), MAX_LINES);
         for (int i = 0; i < shown; i++) {
             int w = font.width(formatEntryLine(entries.get(i)));
             if (w > max) max = w;
         }
         if (entries.size() > MAX_LINES) {
-            max = Math.max(max, font.width(moreLine(entries.size() - MAX_LINES)));
+            max = Math.max(max, font.width(moreLineComponent(entries.size() - MAX_LINES)));
         }
         return max;
     }
@@ -101,8 +101,8 @@ public class ClientPouchTooltip implements ClientTooltipComponent {
                            net.minecraft.client.renderer.MultiBufferSource.BufferSource buffer) {
         int line = 0;
 
-        // Header
-        Component header = Component.literal(headerLine())
+        // Header (translated)
+        Component header = headerComponent().copy()
                 .withStyle(entries.isEmpty() ? ChatFormatting.GRAY : ChatFormatting.AQUA);
         font.drawInBatch(header, x, y + line * LINE_HEIGHT, 0xFFFFFFFF, false, matrix, buffer,
                 Font.DisplayMode.NORMAL, 0, 0xF000F0);
@@ -120,8 +120,8 @@ public class ClientPouchTooltip implements ClientTooltipComponent {
         }
 
         if (entries.size() > MAX_LINES) {
-            Component moreText = Component.literal(moreLine(entries.size() - MAX_LINES))
-                    .withStyle(ChatFormatting.DARK_GRAY);
+            Component moreText = moreLineComponent(entries.size() - MAX_LINES)
+                    .copy().withStyle(ChatFormatting.DARK_GRAY);
             font.drawInBatch(moreText, x, y + line * LINE_HEIGHT, 0xFFFFFFFF, false, matrix, buffer,
                     Font.DisplayMode.NORMAL, 0, 0xF000F0);
         }
@@ -137,11 +137,15 @@ public class ClientPouchTooltip implements ClientTooltipComponent {
     // 表示文字列の組み立て
     // ─────────────────────────────────────────────────────────────
 
-    private String headerLine() {
+    /** Header の表示用 Component (translated)。getWidth で string 長計算もこれの getString() で。 */
+    private Component headerComponent() {
         if (entries.isEmpty()) {
-            return "(empty)";
+            return Component.translatable("item.portableenchantedbookshelf.portable_enchanted_bookshelf.empty");
         }
-        return totalBooks + " enchanted books";
+        return Component.translatable(
+                "item.portableenchantedbookshelf.portable_enchanted_bookshelf.books_count",
+                totalBooks
+        );
     }
 
     private String formatEntryLine(EnchantEntry entry) {
@@ -157,8 +161,10 @@ public class ClientPouchTooltip implements ClientTooltipComponent {
                 .append(Component.literal(" × " + entry.count()).withStyle(ChatFormatting.GRAY));
     }
 
-    private String moreLine(int rest) {
-        return "...and " + rest + " more";
+    private Component moreLineComponent(int rest) {
+        return Component.translatable(
+                "item.portableenchantedbookshelf.portable_enchanted_bookshelf.more", rest
+        );
     }
 
     private Component resolveEnchantmentName(EnchantEntry entry) {
