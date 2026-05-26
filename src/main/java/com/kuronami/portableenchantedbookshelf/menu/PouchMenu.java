@@ -31,12 +31,14 @@ import net.neoforged.neoforge.items.SlotItemHandler;
  */
 public class PouchMenu extends AbstractContainerMenu {
 
-    /** vanilla shulker box GUI レイアウト (shulker_box.png 176×166)。 */
+    /** vanilla large chest GUI レイアウト (generic_54.png 176×222、 9×6 slot grid)。 */
     private static final int POUCH_SLOT_X = 8;
     private static final int POUCH_SLOT_Y = 18;
+    private static final int POUCH_ROWS = 6;
+    private static final int POUCH_COLS = 9;
     private static final int PLAYER_INV_X = 8;
-    private static final int PLAYER_INV_MAIN_Y = 84;
-    private static final int PLAYER_INV_HOTBAR_Y = 142;
+    private static final int PLAYER_INV_MAIN_Y = 140;
+    private static final int PLAYER_INV_HOTBAR_Y = 198;
 
     private final Player player;
     private final boolean clientSide;
@@ -71,11 +73,11 @@ public class PouchMenu extends AbstractContainerMenu {
         }
     }
 
-    /** PEB の 27 slot (9×3) を vanilla shulker box 配置で追加。 */
+    /** PEB の 54 slot (9×6) を vanilla large chest 配置で追加。 */
     private void addPouchSlots() {
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 9; col++) {
-                final int slotIdx = col + row * 9;
+        for (int row = 0; row < POUCH_ROWS; row++) {
+            for (int col = 0; col < POUCH_COLS; col++) {
+                final int slotIdx = col + row * POUCH_COLS;
                 addSlot(new SlotItemHandler(handler, slotIdx,
                         POUCH_SLOT_X + col * 18,
                         POUCH_SLOT_Y + row * 18) {
@@ -150,9 +152,9 @@ public class PouchMenu extends AbstractContainerMenu {
     }
 
     /**
-     * shift-click 処理 — vanilla shulker box と同じ pattern。
+     * shift-click 処理 — vanilla large chest と同じ pattern。
      *
-     * <p>slot 0..26 = PEB slot、 27..62 = player inventory (main 27 + hotbar 9)。
+     * <p>slot 0..53 = PEB slot (9×6=54)、 54..89 = player inventory (main 27 + hotbar 9)。
      */
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
@@ -163,7 +165,7 @@ public class PouchMenu extends AbstractContainerMenu {
         ItemStack inSlot = slot.getItem();
         returned = inSlot.copy();
 
-        final int pouchEnd = 27;
+        final int pouchEnd = PouchInventory.SIZE; // 54
         final int playerEnd = pouchEnd + 36;
 
         if (index < pouchEnd) {
