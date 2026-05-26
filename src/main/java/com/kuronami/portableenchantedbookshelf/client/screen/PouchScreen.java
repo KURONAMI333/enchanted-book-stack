@@ -29,13 +29,13 @@ import net.minecraft.world.entity.player.Inventory;
  */
 public class PouchScreen extends AbstractContainerScreen<PouchMenu> {
 
-    /** vanilla shulker box GUI 背景。 */
+    /** vanilla large chest GUI 背景 (9×6 slot 領域あり)。 */
     private static final ResourceLocation BG_TEXTURE =
-            ResourceLocation.withDefaultNamespace("textures/gui/container/shulker_box.png");
+            ResourceLocation.withDefaultNamespace("textures/gui/container/generic_54.png");
 
-    /** shulker box GUI のサイズ (vanilla 標準: 176×166)。 */
+    /** large chest GUI のサイズ (vanilla 標準: 176×222、 9×6 + player inventory)。 */
     private static final int BG_WIDTH = 176;
-    private static final int BG_HEIGHT = 166;
+    private static final int BG_HEIGHT = 222;
 
     public PouchScreen(PouchMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);

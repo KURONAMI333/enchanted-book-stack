@@ -25,8 +25,8 @@ import net.neoforged.neoforge.items.ItemStackHandler;
  */
 public class PouchInventory extends ItemStackHandler {
 
-    /** vanilla shulker box と同じ 27 slot (9×3 grid)。 */
-    public static final int SIZE = 27;
+    /** vanilla large chest 同等の 54 slot (9×6 grid)。 Sophisticated Backpacks の鉄バックパック級。 */
+    public static final int SIZE = 54;
 
     public PouchInventory() {
         super(SIZE);
