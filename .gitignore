@@ -42,3 +42,4 @@ repo/
 ### 3rd-party jars (NOT redistributable) ###
 libs-local/
 **/libs-local/
+_release/
