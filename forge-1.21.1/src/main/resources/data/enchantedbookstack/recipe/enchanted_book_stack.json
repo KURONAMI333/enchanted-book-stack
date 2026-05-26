@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "group": "enchanted_book_stack",
+  "pattern": [
+    "PLP",
+    "LBL",
+    "PLP"
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:paper"
+    },
+    "L": {
+      "item": "minecraft:leather"
+    },
+    "B": {
+      "item": "minecraft:bookshelf"
+    }
+  },
+  "result": {
+    "id": "enchantedbookstack:enchanted_book_stack",
+    "count": 1
+  }
+}

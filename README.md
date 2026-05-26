@@ -1,10 +1,22 @@
-# Portable Enchanted Bookshelf (PEB)
+# Enchanted Book Stack
 
-> A portable bookshelf that compactly stores hundreds of enchanted books with searchable, hierarchical browsing. Upgradeable tiers, librarian trade integration, all-loader support.
+> Stack enchanted books into a single portable item that can nest inside shulker boxes and backpacks. 54-slot capacity, vanilla shulker-like UI, enchanted_book only.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Modrinth](https://img.shields.io/badge/Modrinth-portable-enchanted-bookshelf-00AF5C)](https://modrinth.com/mod/portable-enchanted-bookshelf)
-[![CurseForge](https://img.shields.io/badge/CurseForge-portable-enchanted-bookshelf-F16436)](https://www.curseforge.com/minecraft/mc-mods/portable-enchanted-bookshelf)
+[![Modrinth](https://img.shields.io/badge/Modrinth-enchanted--book--stack-00AF5C)](https://modrinth.com/mod/enchanted-book-stack)
+[![CurseForge](https://img.shields.io/badge/CurseForge-enchanted--book--stack-F16436)](https://www.curseforge.com/minecraft/mc-mods/enchanted-book-stack)
+
+---
+
+## What it does
+
+- Stores up to **54 enchanted books** in a single inventory slot
+- Right-click to open a vanilla large-chest UI
+- Bundle-style right-click stash: hold the stack → right-click an enchanted book, or vice versa
+- Nestable: place the stack inside shulker boxes, backpacks, or other containers
+- Hover preview: shows the first 5 contained enchantments (vanilla shulker-style)
+- Always glints (enchantment overlay always on)
+- Acquirable via librarian trade (Expert level)
 
 ---
 
@@ -12,22 +24,13 @@
 
 | Minecraft | NeoForge | Forge | Fabric |
 |---|:---:|:---:|:---:|
-| 1.21.1 | TBD | TBD | TBD |
+| 1.21.1 | ✓ | TBD | TBD |
 | 1.20.1 |  —  | TBD | TBD |
-
-(TBD: 実装後に更新)
-
----
-
-## Why?
-
-(目的、解決する問題を 2-3 行で)
 
 ## Installation
 
-1. ローダー導入
-2. 依存 MOD 導入（あれば）
-3. `portable-enchanted-bookshelf-X.Y.Z-{loader}-{mc}.jar` を `mods/` に配置
+1. Install the loader (NeoForge for 1.21.1)
+2. Drop `enchanted-book-stack-X.Y.Z-{loader}-{mc}.jar` into `mods/`
 
 ## License
 

@@ -8,4 +8,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'namedenderchests-fabric-1.21.1'
+rootProject.name = 'enchantedbookstack-fabric-1.21.1'

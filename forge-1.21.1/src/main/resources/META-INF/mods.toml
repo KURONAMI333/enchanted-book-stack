@@ -1,15 +1,29 @@
-# Portable Enchanted Bookshelf - Forge mods.toml (1.21.1)
+# Enchanted Book Stack - Forge 1.21.1 mods.toml
 modLoader="javafml"
-loaderVersion="[52,)"
-license="MIT"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
 
 [[mods]]
-modId="portableenchantedbookshelf"
-version="${file.jarVersion}"
-displayName="Portable Enchanted Bookshelf"
-authors="KURONAMI"
-displayURL="https://github.com/KURONAMI333/portable-enchanted-bookshelf"
-issueTrackerURL="https://github.com/KURONAMI333/portable-enchanted-bookshelf/issues"
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+authors="${mod_authors}"
+displayURL="https://github.com/KURONAMI333/enchanted-book-stack"
+issueTrackerURL="https://github.com/KURONAMI333/enchanted-book-stack/issues"
 description='''
-A portable bookshelf that compactly stores hundreds of enchanted books with searchable, hierarchical browsing. Upgradeable tiers, librarian trade integration, all-loader support.
+${mod_description}
 '''
+
+[[dependencies.${mod_id}]]
+    modId="forge"
+    type="required"
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    type="required"
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"

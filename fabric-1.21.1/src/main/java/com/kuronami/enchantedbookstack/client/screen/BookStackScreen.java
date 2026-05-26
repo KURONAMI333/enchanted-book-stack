@@ -1,0 +1,58 @@
+package com.kuronami.enchantedbookstack.client.screen;
+
+import com.kuronami.enchantedbookstack.menu.BookStackMenu;
+
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
+
+/**
+ * BookStackScreen — vanilla large chest GUI と完全同等。
+ *
+ * <p>背景: vanilla {@code generic_54.png} (176×222) を流用。 9×6=54 slot grid + player
+ * inventory のレイアウトを vanilla がそのまま提供。 自前の検索 / scroll / sort は無し。
+ *
+ * <p>shift-click / drag / hover tooltip / 数字キー hotbar swap など、 vanilla の全 slot
+ * interaction が自動で動く ({@link BookStackMenu} の slot が vanilla SlotItemHandler ベース)。
+ */
+public class BookStackScreen extends AbstractContainerScreen<BookStackMenu> {
+
+    /** vanilla large chest GUI 背景 (9×6 slot 領域あり)。 */
+    private static final ResourceLocation BG_TEXTURE =
+            ResourceLocation.withDefaultNamespace("textures/gui/container/generic_54.png");
+
+    /** large chest GUI のサイズ (vanilla 標準: 176×222、 9×6 + player inventory)。 */
+    private static final int BG_WIDTH = 176;
+    private static final int BG_HEIGHT = 222;
+
+    public BookStackScreen(BookStackMenu menu, Inventory playerInventory, Component title) {
+        super(menu, playerInventory, title);
+        this.imageWidth = BG_WIDTH;
+        this.imageHeight = BG_HEIGHT;
+        this.titleLabelX = 8;
+        this.titleLabelY = 6;
+        this.inventoryLabelX = 8;
+        this.inventoryLabelY = BG_HEIGHT - 96 + 2; // vanilla shulker default
+    }
+
+    /** 背景画像 (vanilla generic_54.png) を描画。 vanilla がその上に slot icons / labels を自動描画。 */
+    @Override
+    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+        graphics.blit(BG_TEXTURE, leftPos, topPos, 0, 0, BG_WIDTH, BG_HEIGHT);
+    }
+
+    /**
+     * 明示的に renderTooltip を呼ぶ — vanilla {@link AbstractContainerScreen#render} は本来
+     * tooltip も描画するが、 何らかの理由で slot tooltip が出ない問題が報告されたため
+     * 確実性のため明示的に呼ぶ。
+     *
+     * <p>背景 + slot + labels の描画は super に任せ、 tooltip だけ追加で確実に出す。
+     */
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        super.render(graphics, mouseX, mouseY, partialTick);
+        this.renderTooltip(graphics, mouseX, mouseY);
+    }
+}
