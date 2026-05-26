@@ -47,9 +47,22 @@ public class PouchScreen extends AbstractContainerScreen<PouchMenu> {
         this.inventoryLabelY = BG_HEIGHT - 96 + 2; // vanilla shulker default
     }
 
-    /** 背景画像 (vanilla shulker_box.png) を描画。 vanilla がその上に slot icons / labels を自動描画。 */
+    /** 背景画像 (vanilla generic_54.png) を描画。 vanilla がその上に slot icons / labels を自動描画。 */
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         graphics.blit(BG_TEXTURE, leftPos, topPos, 0, 0, BG_WIDTH, BG_HEIGHT);
+    }
+
+    /**
+     * 明示的に renderTooltip を呼ぶ — vanilla {@link AbstractContainerScreen#render} は本来
+     * tooltip も描画するが、 何らかの理由で slot tooltip が出ない問題が報告されたため
+     * 確実性のため明示的に呼ぶ。
+     *
+     * <p>背景 + slot + labels の描画は super に任せ、 tooltip だけ追加で確実に出す。
+     */
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        super.render(graphics, mouseX, mouseY, partialTick);
+        this.renderTooltip(graphics, mouseX, mouseY);
     }
 }
