@@ -12,7 +12,7 @@ PEB 実装の参考。pattern を抽出するためのメモ。全観察は byte
 - PEB は core を取り込めない → API 設計だけ学ぶ
 
 ### Tier 数 (確認済み)
-- 確認した tier item: `BACKPACK` (base), `COPPER_BACKPACK`, `IRON_BACKPACK`, `GOLD_BACKPACK`, `DIAMOND_BACKPACK`, `NETHERITE_BACKPACK` = **6 tier** (KURONAMI333 prompt の「4 tier」は推測誤り)
+- 確認した tier item: `BACKPACK` (base), `COPPER_BACKPACK`, `IRON_BACKPACK`, `GOLD_BACKPACK`, `DIAMOND_BACKPACK`, `NETHERITE_BACKPACK` = **6 tier** (当初指示の「4 tier」は推測誤り)
 - ただし PEB は wood/copper/iron/diamond = 4 で十分。SB は upgrade 体験を richにする為 6 tier
 
 ### Item 登録パターン
@@ -226,7 +226,7 @@ CuriosApi.registerCurio(item, ICurioItem instance);
 ### 確証強度
 - **強 (bytecode + json 確認済み)**: SB tier 6 個, SB の `BackpackUpgradeRecipe` が `ShapedRecipe` 継承、Curios `ICurioItem` 全 default method、Curios slot json schema、SS `StorageTierUpgradeItem` の in-world upgrade pattern
 - **中 (signature から推測)**: SB の `copyDataTo` が内容物 transfer 用 (method 名と context から濃厚、実装 body は未読)
-- **弱 (推測)**: PEB が `back` slot か `charm` slot に置くと自然 (これは設計判断、KURONAMI333 に確認推奨)
+- **弱 (推測)**: PEB が `back` slot か `charm` slot に置くと自然 (これは設計判断、要確認)
 
 ### PEB に効かなかった jar
 - **InventoryProfilesNext**: AGPL + Kotlin + Fabric の三重苦で algorithm 参照不可。enum 命名と概念だけ

@@ -3,7 +3,7 @@ title: Portable Enchanted Bookshelf
 short: PEB
 status: spec-locked
 created: 2026-05-25
-revised: 2026-05-25 (KURONAMI333 レビュー 2 回反映: tier 廃止 + 無限容量)
+revised: 2026-05-25 (レビュー 2 回反映: tier 廃止 + 無限容量)
 verification: ADDON_RESEARCH_PROTOCOL 5-step pass (★ GO 判定、scope M)
 research_files:
   - _docs/REFERENCE_JARS_ANALYSIS.md
@@ -13,9 +13,9 @@ research_files:
 
 # Portable Enchanted Bookshelf (PEB) — v0.1.0 SPEC
 
-> KURONAMI333 アイデア起点: 「司書ファームでエンチャント本がインベントリかさばる、本棚を持ち歩いてしまえたら」
+> アイデア起点: 「司書ファームでエンチャント本がインベントリかさばる、本棚を持ち歩いてしまえたら」
 
-**改訂 2 回目の確定仕様**: tier 廃止 (KURONAMI333 判断「アイテム 1 種限定なのでバランス崩壊しない」)、容量無限化、scope M。
+**改訂 2 回目の確定仕様**: tier 廃止 (設計判断「アイテム 1 種限定なのでバランス崩壊しない」)、容量無限化、scope M。
 
 ---
 
@@ -51,7 +51,7 @@ vanilla Bundle が「64/max_stack_size」公式でエンチャント本 1 冊し
 5. **日本語 native**
 6. **modded enchantment 動的対応** (vanilla enchant 以外も自動扱い)
 7. **level 上限なし** (Limitless Enchantments 等で Fortune X+ 作成可)
-8. **tree 階層 GUI** (フラット list が一般、tree は KURONAMI333 独自)
+8. **tree 階層 GUI** (フラット list が一般、tree は独自設計)
 
 ### ⑤ 生存性 (本家・競合の侵食リスク)
 
@@ -73,7 +73,7 @@ vanilla Bundle が「64/max_stack_size」公式でエンチャント本 1 冊し
 
 `mod_id` 内 item ID: `portableenchantedbookshelf:portable_enchanted_bookshelf`
 
-### 3.2 容量: 無限 (KURONAMI333 判断)
+### 3.2 容量: 無限 (設計判断)
 
 - 内容物上限なし
 - エンチャント本だけが入る (他アイテム拒否) → 1 種限定でバランス影響ゼロ
@@ -85,7 +85,7 @@ vanilla Bundle が「64/max_stack_size」公式でエンチャント本 1 冊し
     Fortune III × 3, Mending I × 2, Aqua Affinity I × 1, ...
   ```
 
-### 3.3 統合表示 + tree 階層 (KURONAMI333 設計)
+### 3.3 統合表示 + tree 階層 (設計)
 
 **「エンチャント種類で 1 行に集約 → 展開で level 別 breakdown」**
 
@@ -125,10 +125,10 @@ PouchContents = List<Entry> where Entry = {
 - partial match: `"fort"` → Fortune ヒット
 - level filter: `"III"` で全 Level 3 enchant ヒット
 - enchant ID 直接: `"minecraft:fortune"` / `"apotheosis:soulbound"`
-- **localized name 対応**: `"幸運"` で Fortune ヒット (KURONAMI333 必須要件)
+- **localized name 対応**: `"幸運"` で Fortune ヒット (必須要件)
 - Sort: Name asc / Recently added / Level desc (default: Name)
 
-### 3.5 動的 enchantment 対応 (KURONAMI333 必須要件)
+### 3.5 動的 enchantment 対応 (必須要件)
 
 **ハードコード厳禁**:
 - エンチャント判定: vanilla `Items.ENCHANTED_BOOK` のみ
@@ -306,7 +306,7 @@ Apotheosis ユーザーは既存解で足りる → ターゲットは **vanilla
 
 - [ ] handheld 時の 3D 描画モデル詳細 (本棚 block 流用 vs 専用 model)
 - [ ] tooltip の内容物プレビュー文字数上限 (3-5 種類くらい + "..." 等)
-- [ ] PEB が破壊された時の挙動 (中身ドロップ vs 復元不能、要 KURONAMI333 判断)
+- [ ] PEB が破壊された時の挙動 (中身ドロップ vs 復元不能、要判断)
 - [ ] GUI hotkey (none = 右クリックのみで OK か、F/P 等の hotkey 追加するか)
 
 ---
@@ -315,7 +315,7 @@ Apotheosis ユーザーは既存解で足りる → ターゲットは **vanilla
 
 | リスク | 対策 |
 |---|---|
-| scope M = 2-3 セッション開発 | Phase 制で KURONAMI333 チェックポイント、各 Phase 完成で KURONAMI333 確認 |
+| scope M = 2-3 セッション開発 | Phase 制でチェックポイント、各 Phase 完成で確認 |
 | GUI 5 loader 対応の作業量 | NeoForge 1.21.1 で完全動作 → cp + patch で水平展開 |
 | Component API は 1.21+ のみ = 1.20.1 別実装必要 | 1.20.1 は CompoundTag で実装、共通 interface で吸収 |
 | 直接競合 (Enchanted BookShelf 225 DL) との混同 | STORE_BODY で「item 派の選択肢」明示、Apotheosis 系は捨て |
@@ -335,4 +335,4 @@ Apotheosis ユーザーは既存解で足りる → ターゲットは **vanilla
 7. [ ] Menu / Screen 骨組み
 8. [ ] 検索 / sort
 9. [ ] 司書交易
-10. [ ] KURONAMI333 チェックポイント (NeoForge 1.21.1 で完動 → 残り 4 loader 展開)
+10. [ ] チェックポイント (NeoForge 1.21.1 で完動 → 残り 4 loader 展開)

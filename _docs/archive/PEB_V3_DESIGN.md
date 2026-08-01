@@ -1,6 +1,6 @@
 ---
 title: Portable Enchanted Bookshelf v3 Design
-status: DESIGN — pending KURONAMI333 review
+status: DESIGN — pending review
 created: 2026-05-26
 based_on: 10-mod research in _docs/research/
 abandons: phase-1-bundle-style (git tag), phase-2-viewport (main, current)
@@ -305,7 +305,7 @@ public class PouchScreen extends AbstractContainerScreen<PouchMenu> {
         super.init();
         repo = PouchRepo.fromStack(menu.getPebStack());
 
-        // 検索バー: 右上 (タイトル横、 インベントリ整理系 MOD 流儀、 KURONAMI333 指摘)
+        // 検索バー: 右上 (タイトル横、 インベントリ整理系 MOD 流儀、 レビュー指摘)
         searchBox = new PouchSearchBox(font, VIEWPORT_X + 88, 4, 70, 12);
         searchBox.setResponder(repo::setSearchPhrase);
         addWidget(searchBox); // ★ Sophisticated 流儀: addWidget + 手動 render
@@ -659,7 +659,7 @@ src/main/java/com/kuronami/portableenchantedbookshelf/
 
 ## 15. 設計レビュー観点
 
-KURONAMI333 に確認したい点:
+確認したい点:
 
 1. **データ層 inline 採用 OK?** (Sophisticated SavedData 流儀ではなく ItemContainerContents)
 2. **256 slot hard cap OK?** (それ以上は NBT 直書きで複雑化)
@@ -692,4 +692,4 @@ KURONAMI333 に確認したい点:
 
 ---
 
-**この設計で進める? KURONAMI333 レビュー後に実装着手。**
+**この設計で進める? レビュー後に実装着手。**

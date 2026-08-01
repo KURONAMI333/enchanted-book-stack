@@ -4,7 +4,7 @@ created: 2026-05-25
 researcher: Win development tooling (background agent)
 sources: old.reddit.com search.json + WebSearch (CurseForge / Modrinth)
 period_scope: 直近 1-3 年 (2024-2026, 1.20.1+ 系)
-status: draft (KURONAMI333 レビュー待ち)
+status: draft (レビュー待ち)
 ---
 
 # Portable Enchanted Bookshelf — Reddit 需要調査
@@ -145,7 +145,7 @@ WebSearch (CurseForge / Modrinth) で発見したもの:
 
 ---
 
-## KURONAMI333 PEB との fit (率直評価)
+## PEB との fit (率直評価)
 
 ### 強く当たる仕様
 - **tree 展開 GUI による種類別集約 + level breakdown** ← 最も強い Reddit 需要 (629 up "chiseled bookshelf needs tooltips" 直撃)
@@ -158,9 +158,9 @@ WebSearch (CurseForge / Modrinth) で発見したもの:
 - **4 tier (64/256/1024/4096)** ← Tier 進行は modded 民は好む傾向だが、Reddit シグナルでは tier への言及なし。1024/4096 は Giacomo's Bookshelf や Apotheosis Library of Alexandria の規模感と被る
 - **Apotheosis 互換性確認必須** ← ATM 系で Library of Alexandria が事実上標準。PEB が ATM modpack に入る差別化が必要 (Apotheosis は据え置き型、PEB は携帯型 = ニッチは存在)
 
-### SPEC 修正候補 (KURONAMI333 レビュー材料)
+### SPEC 修正候補 (レビュー材料)
 1. **競合表の更新必須**: SPEC §2 「既存の不在」の記述 (>1.21 系で「異種エンチャント本を 1 スロット大量収納」mod **0 件**) は、Enchanted BookShelf (1000冊, 1.21 NeoForge, 225 DL) という反例があるため**厳密には不正確**。「低 DL かつ機能差別化可」と書き換えるのが誠実
-2. **Giacomo's Bookshelf の取り扱い**: 1.20.4 で更新止まりだが 44万 DL の事実は、(a) 競合と捉えるか (b) 「同コンセプトが 1.21 で空席化している」と捉えるかで戦略が変わる。KURONAMI333 判断材料
+2. **Giacomo's Bookshelf の取り扱い**: 1.20.4 で更新止まりだが 44万 DL の事実は、(a) 競合と捉えるか (b) 「同コンセプトが 1.21 で空席化している」と捉えるかで戦略が変わる。判断材料
 3. **訴求ワード再考**: 「持ち歩き本棚」より「**Pocket Enchanted Library**」「**Bookshelf-in-a-slot**」のような「インベントリ圧縮」フッキングの方が Reddit 痛みと一致する可能性
 
 ### epistemics 上の留保
@@ -192,7 +192,7 @@ WebSearch (Google 経由):
 
 ---
 
-## 次アクション提案 (KURONAMI333 用)
+## 次アクション提案
 
 1. **SPEC §2 の競合 mod 表を更新** (Giacomo / Enchanted BookShelf / Enchanted Bookshelves / Handy Bookshelf を追加し差別化軸を明文化)
 2. **訴求軸の再選択**: 「持ち歩き」 vs 「インベントリ 1 スロット」 vs 「視覚識別ライブラリ」 の優先度を再考

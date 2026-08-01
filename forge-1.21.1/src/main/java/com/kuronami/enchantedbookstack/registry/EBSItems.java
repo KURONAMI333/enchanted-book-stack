@@ -12,7 +12,7 @@ import net.minecraftforge.registries.RegistryObject;
 /**
  * EBS の Item 登録ハブ。
  *
- * <p>v0.1.0 では単一 item ({@code enchanted_book_stack}) のみ。tier 廃止 (KURONAMI333 判断:
+ * <p>v0.1.0 では単一 item ({@code enchanted_book_stack}) のみ。tier 廃止 (設計判断:
  * アイテム 1 種限定なのでバランス崩壊しない)、容量無制限。
  */
 public final class EBSItems {
