@@ -23,4 +23,6 @@ Acquire it from an Expert-level librarian (24 emerald + 4 leather), or in creati
 
 Install on the server and on each client.
 
-Free to use in any modpack. Source and issues: https://github.com/KURONAMI333/enchanted-book-stack
+Bugs and questions: comment on the CurseForge page, or DM @kuronami333 on X.
+
+Free to use in any modpack. Source: https://github.com/KURONAMI333/enchanted-book-stack
