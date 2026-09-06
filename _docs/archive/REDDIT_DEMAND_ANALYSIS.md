@@ -1,7 +1,6 @@
 ---
 title: Portable Enchanted Bookshelf — Reddit 需要調査
 created: 2026-05-25
-researcher: Win development tooling (background agent)
 sources: old.reddit.com search.json + WebSearch (CurseForge / Modrinth)
 period_scope: 直近 1-3 年 (2024-2026, 1.20.1+ 系)
 status: draft (レビュー待ち)
