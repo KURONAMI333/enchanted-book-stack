@@ -8,7 +8,6 @@ verification: ADDON_RESEARCH_PROTOCOL 5-step pass (★ GO 判定、scope M)
 research_files:
   - _docs/REFERENCE_JARS_ANALYSIS.md
   - _docs/REDDIT_DEMAND_ANALYSIS.md
-  - _docs/EXISTING_MODS_ANALYSIS.md
 ---
 
 # Portable Enchanted Bookshelf (PEB) — v0.1.0 SPEC
@@ -32,7 +31,7 @@ vanilla Bundle が「64/max_stack_size」公式でエンチャント本 1 冊し
 - 数百冊集まると倉庫圧迫、目当ての本探しが苦行 (Reddit `r/Minecraft` 629 upvote: "chiseled bookshelf tooltip なしで探すのに 16 分かかる")
 - vanilla Bundle (1.21+) は「64/max_stack_size」公式で **エンチャント本 1 冊で bundle 1 個分占有** = 機能しない
 
-### 既存状況 (3-agent 詳細調査結果)
+### 既存状況
 
 **直接競合: 2 件**
 | mod | DL | Loader/MC | 機能 | PEB との差別化 |

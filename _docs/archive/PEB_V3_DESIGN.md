@@ -221,7 +221,7 @@ public class PouchMenu extends AbstractContainerMenu {
 ```
 
 **重要 pattern 出典**:
-- `addClientVirtualSlot` で server/client slot 数差 = AE2 流儀 [`research/06-ae2-mestorage.md`]
+- `addClientVirtualSlot` で server/client slot 数差を扱う
 - `pebSlotIndex` lock = Sophisticated Core 罠回避
 - `onHandlerChanged` で DataComponent 経由 sync = vanilla の slot sync メカニズム流用 (独自 packet 削減)
 

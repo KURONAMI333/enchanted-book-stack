@@ -9,7 +9,7 @@ version="${mod_version}"
 displayName="${mod_name}"
 authors="${mod_authors}"
 displayURL="https://github.com/KURONAMI333/enchanted-book-stack"
-issueTrackerURL="https://github.com/KURONAMI333/enchanted-book-stack/issues"
+issueTrackerURL="https://x.com/kuronami333"
 description='''
 ${mod_description}
 '''

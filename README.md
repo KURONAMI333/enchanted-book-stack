@@ -20,17 +20,14 @@
 
 ---
 
-## Supported Loaders / Versions
+## Compatibility
 
-| Minecraft | NeoForge | Forge | Fabric |
-|---|:---:|:---:|:---:|
-| 1.21.1 | ✓ | TBD | TBD |
-| 1.20.1 |  —  | TBD | TBD |
+This repository's root build targets NeoForge 1.21.1. Choose a published file whose Minecraft version and loader match your instance.
 
 ## Installation
 
-1. Install the loader (NeoForge for 1.21.1)
-2. Drop `enchanted-book-stack-X.Y.Z-{loader}-{mc}.jar` into `mods/`
+1. Install the loader matching the published file.
+2. Put that file in `mods/`.
 
 ## License
 
@@ -39,3 +36,11 @@
 ## Credits
 
 - Author: KURONAMI
+
+## Downloads and support
+
+Downloads: [CurseForge](https://www.curseforge.com/minecraft/mc-mods/enchanted-book-stack).
+
+For bugs and questions, comment on the [CurseForge page](https://www.curseforge.com/minecraft/mc-mods/enchanted-book-stack) or DM [@kuronami333 on X](https://x.com/kuronami333).
+
+[Source](https://github.com/KURONAMI333/enchanted-book-stack) · [License](LICENSE)
