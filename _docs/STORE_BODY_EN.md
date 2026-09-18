@@ -1,5 +1,3 @@
-# Enchanted Book Stack
-
 Stack up to 54 enchanted books into a single portable item. Open it like a chest, nest it inside shulker boxes or backpacks, and reclaim the inventory slots your enchanting library has been eating.
 
 A working set of enchanted books is 54 slots — move them between bases or carry them into the Nether and they fragment across half your storage. Enchanted Book Stack holds dozens in one slot, shows what's inside on hover, and drops into a shulker box like any other item.
@@ -21,8 +19,7 @@ Acquire it from an Expert-level librarian (24 emerald + 4 leather), or in creati
 
 - Fabric only: Fabric API (the NeoForge and Forge builds need nothing)
 
-Install on the server and on each client.
 
 Bugs and questions: comment on the CurseForge page, or DM @kuronami333 on X.
 
-Free to use in any modpack. Source: https://github.com/KURONAMI333/enchanted-book-stack
+All Rights Reserved. Modpack inclusion is allowed without permission or credit. Source: https://github.com/KURONAMI333/enchanted-book-stack
