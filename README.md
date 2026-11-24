@@ -3,7 +3,6 @@
 > Stack enchanted books into a single portable item that can nest inside shulker boxes and backpacks. 54-slot capacity, vanilla shulker-like UI, enchanted_book only.
 
 [![License: All Rights Reserved](https://img.shields.io/badge/License-All%20Rights%20Reserved-lightgrey.svg)](LICENSE)
-[![Modrinth](https://img.shields.io/badge/Modrinth-enchanted--book--stack-00AF5C)](https://modrinth.com/mod/enchanted-book-stack)
 [![CurseForge](https://img.shields.io/badge/CurseForge-enchanted--book--stack-F16436)](https://www.curseforge.com/minecraft/mc-mods/enchanted-book-stack)
 
 ---
